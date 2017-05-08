@@ -5,10 +5,17 @@
     android:layout_height="match_parent"
     tools:context="com.example.a1kayat34.pointofinterest_app.MainActivity">
 
-    <fragment class="com.example.a1kayat34.pointofinterest_app.POIMapFragment"
+    <!--fragment class="com.example.a1kayat34.pointofinterest_app.POIMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/mapFragmentID">
 
-    </fragment>
+    </fragment> -->
+    <org.osmdroid.views.MapView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:enabled="true"
+        android:clickable="true"
+        android:id="@+id/map_id"
+        tilesource="Mapnik" />
 </RelativeLayout>

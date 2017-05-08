@@ -3,16 +3,61 @@ package com.example.a1kayat34.pointofinterest_app;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
-public class MainActivity extends Activity {
+import org.osmdroid.config.Configuration;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.OverlayItem;
+
+import java.util.ArrayList;
+
+public class MainActivity extends Activity implements View.OnClickListener {
+
+    MapView map;
+    ItemizedIconOverlay<OverlayItem> items;
+    ItemizedIconOverlay.OnItemGestureListener<OverlayItem> markerGestureListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+
+        map = (MapView) findViewById(R.id.map_id);
+
+        map.setBuiltInZoomControls(true);
+        map.getController().setZoom(13);
+        map.getController().setCenter(new GeoPoint(51.05, -0.72));
+
+        markerGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>()
+        {
+            public boolean onItemLongPress(int i, OverlayItem item){
+                Toast.makeText(MainActivity.this, item.getSnippet(), Toast.LENGTH_LONG).show();
+                return true;
+            }
+
+            public boolean onItemSingleTapUp(int i, OverlayItem item){
+                Toast.makeText(MainActivity.this, item.getSnippet(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+
+        };
+
+        items = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(),markerGestureListener);
+        OverlayItem fernhurst = new OverlayItem("Fernhurst", "Vilage", new GeoPoint(51.05, -0.72));
+        //fernhurst.setMarker(getResources().getDrawable(R.drawable.marker));
+        items.addItem(fernhurst);
+        map.getOverlays().add(items);
+
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -23,21 +68,53 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onClick(View view) {
+
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        POIMapFragment mapFragment = (POIMapFragment) getFragmentManager().findFragmentById(R.id.mapFragmentID);
+        //POIMapFragment mapFragment = (POIMapFragment) getFragmentManager().findFragmentById(R.id.mapFragmentID);
 
         if(item.getItemId() == R.id.add_poi_id){
             //when item add_poi item selected launch second activity
             Intent intent = new Intent (this, AddPointOfInterestActivity.class);
-            startActivity(intent);
-
+            startActivityForResult(intent, 1);
             return true;
         }
         if(item.getItemId() == R.id.save_poi_id){
+
 
             return true;
         }
         return false;
     }
+
+    protected void onActivityResult(int requestetCode, int resultCode, Intent intent){
+        if (requestetCode == 1){
+            if (resultCode == RESULT_OK){
+                Bundle extras = intent.getExtras();
+
+                String name = getIntent().getExtras().getString("com.example.a1kayat34.name_input");
+                String type = getIntent().getExtras().getString("com.example.a1kayat34.type_input");
+                String description = getIntent().getExtras().getString("com.example.a1kayat34.description_input");
+
+                double lat = map.getMapCenter().getLatitude();
+                double lon = map.getMapCenter().getLongitude();
+
+                items = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(),markerGestureListener);
+
+                OverlayItem newPlace = new OverlayItem(name, description, new GeoPoint(lat,lon));
+
+                items.addItem(newPlace);
+                map.getOverlays().add(items);
+            }
+        }
+
+    }
+
+
+
 
 }
