@@ -1,8 +1,10 @@
 package com.example.a1kayat34.pointofinterest_app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +18,9 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -35,7 +40,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         map.setBuiltInZoomControls(true);
         map.getController().setZoom(13);
-        map.getController().setCenter(new GeoPoint(51.05, -0.72));
+        map.getController().setCenter(new GeoPoint(50.9027, -1.4048));
 
         markerGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>()
         {
@@ -53,9 +58,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         };
 
         items = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(),markerGestureListener);
-        OverlayItem fernhurst = new OverlayItem("Fernhurst", "Vilage", new GeoPoint(51.05, -0.72));
+        OverlayItem southampton = new OverlayItem("Southampton", "City of southampton", new GeoPoint(50.9027, -1.4048));
         //fernhurst.setMarker(getResources().getDrawable(R.drawable.marker));
-        items.addItem(fernhurst);
+        items.addItem(southampton);
         map.getOverlays().add(items);
 
     }
@@ -86,6 +91,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if(item.getItemId() == R.id.save_poi_id){
 
 
+
             return true;
         }
         return false;
@@ -96,9 +102,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             if (resultCode == RESULT_OK){
                 Bundle extras = intent.getExtras();
 
-                String name = getIntent().getExtras().getString("com.example.a1kayat34.name_input");
-                String type = getIntent().getExtras().getString("com.example.a1kayat34.type_input");
-                String description = getIntent().getExtras().getString("com.example.a1kayat34.description_input");
+                String name = intent.getExtras().getString("com.example.a1kayat34.name_input");
+                String type = intent.getExtras().getString("com.example.a1kayat34.type_input");
+                String description = intent.getExtras().getString("com.example.a1kayat34.description_input");
 
                 double lat = map.getMapCenter().getLatitude();
                 double lon = map.getMapCenter().getLongitude();
@@ -109,6 +115,30 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 items.addItem(newPlace);
                 map.getOverlays().add(items);
+
+                //Saving markers to a file
+
+                try {
+                    PrintWriter pw =
+                            new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/data.csv", true));
+                    //Load the data from ADD POI activity
+
+                    for(int i=0; i<items.size(); i++){
+                        OverlayItem item = items.getItem(i);
+                        // item.getTitle() //-the name of the item
+                        // item.getSnippet() //- the description
+                        // item.getPoint().getLatitude() //- latitude
+
+                        pw.println(item.getTitle()+","+item.getSnippet()+","+item.getPoint().getLatitude()+","+item.getPoint().getLongitude());
+                        pw.close();
+                    }
+
+                }
+                catch (IOException e){
+                    new AlertDialog.Builder(this).setMessage("ERROR: " + e).
+                            setPositiveButton("OK", null).show();
+
+                }
             }
         }
 
