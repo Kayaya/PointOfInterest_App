@@ -15,7 +15,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddPointOfInterestActivity" android:label="Add a Point of Interest" />
+        <activity
+            android:name=".AddPointOfInterestActivity"
+            android:label="Add a Point of Interest" />
+        <activity android:name=".CustomPreferenceActivity" android:label="Preferences">
+        </activity>
     </application>
 
 </manifest>

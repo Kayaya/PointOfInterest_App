@@ -4,5 +4,5 @@
     <string name="app_add_poi"> Add Point of Interest</string>
 
     <string name="add_poi"> Add Point of Interest</string>
-    <string name="save_poi">Save Point of Interest</string>
+    <string name="setPreferencesString">Preferences</string>
 </resources>

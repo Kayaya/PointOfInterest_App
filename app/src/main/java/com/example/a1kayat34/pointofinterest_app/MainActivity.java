@@ -3,6 +3,7 @@ package com.example.a1kayat34.pointofinterest_app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -18,6 +19,8 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -63,7 +66,42 @@ public class MainActivity extends Activity implements View.OnClickListener {
         items.addItem(southampton);
         map.getOverlays().add(items);
 
-    }
+    }//end of onCreate()
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        //Loading point of interest from file
+        try {
+            FileReader fr = new FileReader(Environment.getExternalStorageDirectory().getAbsolutePath()+ "/data.csv");
+            BufferedReader reader = new BufferedReader(fr);
+            String line = "";
+            while((line = reader.readLine())!= null){
+                String[] wholeFile = line.split(",");
+                if (wholeFile.length == 4){
+                    //passing data
+                    Double lat = Double.parseDouble(wholeFile[2]);
+                    Double lon = Double.parseDouble(wholeFile[3]);
+
+                    OverlayItem item = new OverlayItem(wholeFile[0], wholeFile[1], new GeoPoint(lat, lon));
+                    items.addItem(item);
+                }
+            }
+            reader.close();
+            //set a text to the overlayItem
+            map.getOverlays().add(items);
+
+        }
+        catch(IOException e){
+            new AlertDialog.Builder(this).setMessage("ERROR" + e).setPositiveButton("OK", null).show();
+        }
+
+        //Aceesing preferences from App
+        SharedPreferences customPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean autoupload = customPrefs.getBoolean("autoupload", true);
+
+    } // End of onStart()
 
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -83,15 +121,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //POIMapFragment mapFragment = (POIMapFragment) getFragmentManager().findFragmentById(R.id.mapFragmentID);
 
         if(item.getItemId() == R.id.add_poi_id){
-            //when item add_poi item selected launch second activity
+            //when item add_poi selected launch second activity
             Intent intent = new Intent (this, AddPointOfInterestActivity.class);
             startActivityForResult(intent, 1);
             return true;
         }
-        if(item.getItemId() == R.id.save_poi_id){
-
-
-
+        if(item.getItemId() == R.id.setPreferencesID){
+            //when preferences item selected launch preferences activity
+            Intent intent = new Intent (this, CustomPreferenceActivity.class);
+            startActivityForResult(intent, 2);
             return true;
         }
         return false;
@@ -130,8 +168,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         // item.getPoint().getLatitude() //- latitude
 
                         pw.println(item.getTitle()+","+item.getSnippet()+","+item.getPoint().getLatitude()+","+item.getPoint().getLongitude());
-                        pw.close();
                     }
+                    pw.close();
 
                 }
                 catch (IOException e){
